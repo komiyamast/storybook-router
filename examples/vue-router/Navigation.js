@@ -1,4 +1,5 @@
 import { storiesOf } from '@storybook/vue';
+import Vue from 'vue';
 
 import StoryRouter from 'storybook-router';
 
@@ -32,7 +33,8 @@ storiesOf('Navigation', module)
         <nav-bar/>
         <router-view/>
       </div>`
-  }));
+  })
+);
 
 
 const User = {
@@ -133,5 +135,54 @@ storiesOf('Navigation', module)
       goForward: function() {
         this.$router.forward();
       },
+    },
+  }));
+
+/* eslint-disable no-console */
+const StoryWrapper = Story => Vue.extend({
+  created() {
+    this.$router.push = location => {
+      // custom code here
+      console.log('PUSH:', location.path);
+    };
+
+    this.$router.replace = location => {
+      // custom code here
+      console.log('REPLACE:', location.path);
+    };
+
+    this.$router.go = n => {
+      // custom code here
+      console.log('GO:', n);
+    };
+  },
+  ...Story
+});
+/* eslint-enable no-console */
+
+storiesOf('Navigation', module)
+  .addDecorator(StoryRouter({}))
+  .add('customized router', () => StoryWrapper({
+    template: `
+      <div>
+        <ul>
+          <li><router-link to="/push">Declarative Push</router-link></li>
+          <li><router-link to="/replace" replace>Declarative Replace</router-link></li>
+        </ul>
+        <button v-on:click="doPush">Programatic Push</button>
+        <button v-on:click="doReplace">Programmatic Replace</button>
+        <button v-on:click="doGo">Go</button>
+        <router-view/>
+      </div>`,
+    methods: {
+      doPush: function() {
+        this.$router.push({ path: '/ppush' });
+      },
+      doReplace: function() {
+        this.$router.replace({ path: '/preplace' });
+      },
+      doGo: function() {
+        this.$router.go(1);
+      }
     },
   }));
